@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>New Year Party Background</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Alex+Brush&display=swap');
+body {
+  margin: 0;
+  overflow: hidden;
+  background: #000066; /* dark blue */
+}
+canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: block;
+}
+#message {
+  position: absolute;
+  top: 220px; /* below logo */
+  width: 100%;
+  text-align: center;
+  color: white;
+  font-size: 80px;
+  font-family: 'Alex Brush', cursive;
+  text-shadow: 2px 2px 12px #000;
+  z-index: 10;
+}
+#bottomtext {
+  position: absolute;
+  bottom: 20px;
+  width: 100%;
+  text-align: center;
+  color: white;
+  font-size: 32px;
+  font-family: 'Alex Brush', cursive;
+  text-shadow: 2px 2px 10px #000;
+  z-index: 10;
+}
+</style>
+</head>
+<body>
+
+<div id="message">Ангийн андууддаа шинэ оны мэнд хүргэе!</div>
+<div id="bottomtext">Улаанбаатар, Монгол улс<br>2026-12-20</div>
+<canvas id="bg"></canvas>
+
+<script>
+const canvas = document.getElementById('bg');
+const ctx = canvas.getContext('2d');
+
+function resize() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+window.addEventListener('resize', resize);
+
+window.addEventListener('load', () => {
+  resize();
+
+  // --- SNOW ---
+  let flakes = [];
+  for(let i=0;i<150;i++){
+    flakes.push({
+      x: Math.random()*canvas.width,
+      y: Math.random()*canvas.height,
+      r: Math.random()*4+2,
+      sx: Math.random()*0.5-0.25,
+      sy: Math.random()*0.5+0.3
+    });
+  }
+
+  // --- FIREWORKS ---
+  let particles = [];
+  const colors = ["red","yellow","blue","purple","orange","lime","cyan","magenta"];
+  function firework() {
+    const x = Math.random()*canvas.width;
+    const y = Math.random()*canvas.height*0.4;
+    for(let i=0;i<50;i++){
+      const a = Math.random()*Math.PI*2;
+      const s = Math.random()*3+1;
+      const c = colors[Math.floor(Math.random()*colors.length)];
+      particles.push({ x, y, vx: Math.cos(a)*s, vy: Math.sin(a)*s, life:70, color:c });
+    }
+  }
+  setInterval(firework, 3500);
+
+  // --- STATIC TREE ---
+  const treeCanvas = document.createElement("canvas");
+  const treeCtx = treeCanvas.getContext("2d");
+  function renderTreeStatic() {
+    const treeHeight = canvas.height * 0.5;
+    const treeWidth = 260; 
+    const baseY = canvas.height - 20;
+
+    treeCanvas.width = treeWidth;
+    treeCanvas.height = treeHeight * 1.2;
+
+    const offX = treeCanvas.width / 2;
+    const offY = treeCanvas.height;
+
+    treeCtx.clearRect(0,0,treeCanvas.width, treeCanvas.height);
+
+    // Trunk
+    treeCtx.fillStyle = "#4e2e03";
+    treeCtx.fillRect(offX - 20, offY - treeHeight*0.15, 40, treeHeight*0.15);
+
+    // Branches
+    function branch(x, y, width, height, levels) {
+      for (let i = 0; i < levels; i++) {
+        let ly = y - (height / levels) * i;
+        let lw = width - (width / levels) * i;
+
+        treeCtx.beginPath();
+        treeCtx.moveTo(x - lw / 2, ly);
+        for (let j = 0; j < 6; j++) {
+          let px = x - lw / 2 + (lw / 5) * j;
+          let py = ly + (Math.random() * 10 - 5);
+          treeCtx.lineTo(px, py);
+        }
+        treeCtx.lineTo(x + lw / 2, ly);
+        treeCtx.closePath();
+        treeCtx.fillStyle = `hsl(${110 + Math.random()*10},60%,${20 + Math.random()*12}%)`;
+        treeCtx.fill();
+      }
+    }
+
+    branch(offX, offY - treeHeight*0.10, 260, treeHeight*0.85, 18);
+    branch(offX, offY - treeHeight*0.05, 220, treeHeight*0.75, 16);
+    branch(offX, offY - treeHeight*0.00, 180, treeHeight*0.65, 14);
+
+    treeCtx.closePath();
+    treeCtx.fill();
+  }
+  renderTreeStatic();
+
+  function drawTree() {
+    ctx.drawImage(treeCanvas, 0, canvas.height - treeCanvas.height);
+  }
+
+  // --- Decorations ---
+  let ledBlinkPhase = 0;
+  let starGlow = 0;
+
+  function drawFairyLights() {
+    const baseX = 0;
+    const baseY = canvas.height - treeCanvas.height;
+    const numLights = 40;
+    for (let i=0;i<numLights;i++){
+      const lx = baseX + Math.random() * treeCanvas.width;
+      const ly = baseY + Math.random() * (treeCanvas.height*0.85);
+      const colors = ["red","yellow","blue","green"];
+      ctx.beginPath();
+      ctx.fillStyle = colors[Math.floor(Math.random()*colors.length)];
+      ctx.arc(lx, ly, 4, 0, Math.PI*2);
+      ctx.fill();
+    }
+  }
+
+  function drawOrnaments() {
+    const baseX = 0;
+    const baseY = canvas.height - treeCanvas.height;
+    const colors = ["#ff3333","#ffcc00","#3399ff","#ff66ff"];
+    for(let i=0;i<20;i++){
+      const ox = baseX + Math.random()*treeCanvas.width;
+      const oy = baseY + Math.random()*(treeCanvas.height*0.8);
+      ctx.beginPath();
+      ctx.fillStyle = colors[i%colors.length];
+      ctx.arc(ox,oy,6,0,Math.PI*2);
+      ctx.fill();
+      ctx.strokeStyle = "#fff";
+      ctx.stroke();
+    }
+  }
+
+  // Predefine LED positions once
+const ledPositions = [];
+for(let i=0; i<9; i++){
+  const lx = Math.random() * treeCanvas.width;
+  const ly = Math.random() * (treeCanvas.height*0.85);
+  ledPositions.push({x: lx, y: ly});
+}
+
+function drawBlinkingLEDs(){
+  const baseY = canvas.height - treeCanvas.height;
+  ledBlinkPhase += 0.00001; // slower and smoother blinking
+  for(let i=0; i<ledPositions.length; i++){
+    const pos = ledPositions[i];
+    const alpha = 0.04 + 0.06*Math.sin(ledBlinkPhase + i); // smooth fade
+    ctx.beginPath();
+    ctx.fillStyle = `rgba(255,255,0,${alpha})`;
+    ctx.arc(pos.x, baseY + pos.y, 4, 0, Math.PI*2);
+    ctx.fill();
+  }
+}
+
+
+  function drawGiftBoxes(){
+    const baseY = canvas.height;
+    const boxes = [
+  {x: 20, y: baseY-30, w: 40, h: 30, color:"#ff3333"},      // 1
+  {x: 70, y: baseY-35, w: 50, h: 35, color:"#33cc33"},      // 2
+  {x: 130, y: baseY-30, w: 45, h: 30, color:"#3366ff"},     // 3 (bottom layer)
+  {x: 190, y: baseY-35, w: 40, h: 35, color:"#ff99cc"},     // 4 (bottom layer)
+  {x: 130, y: baseY-30-35, w: 45, h: 30, color:"#ffcc33"},  // 5 (stacked on 3)
+  {x: 190, y: baseY-35-35, w: 50, h: 35, color:"#33ffff"}   // 6 (stacked on 4)
+];
+
+    boxes.forEach(b=>{
+      ctx.fillStyle=b.color;
+      ctx.fillRect(b.x,b.y,b.w,b.h);
+      ctx.strokeStyle="#fff";
+      ctx.strokeRect(b.x,b.y,b.w,b.h);
+      ctx.beginPath();
+      ctx.moveTo(b.x+b.w/2,b.y);
+      ctx.lineTo(b.x+b.w/2,b.y+b.h);
+      ctx.moveTo(b.x,b.y+b.h/2);
+      ctx.lineTo(b.x+b.w,b.y+b.h/2);
+      ctx.stroke();
+    });
+  }
+
+  function drawGlowingStar(){
+  // only one star at top of tree
+  starGlow += 0.006; // slow pulse
+  const alpha = 0.6 + 0.4*Math.sin(starGlow);
+  const starX = treeCanvas.width / 2; 
+  const starY = canvas.height - treeCanvas.height - 10; // top of tree
+  ctx.fillStyle=`rgba(255,215,0,${alpha})`;
+  ctx.beginPath();
+  for(let i=0;i<5;i++){
+    ctx.lineTo(
+      starX + 16*Math.cos((18+i*72)*Math.PI/180),
+      starY + 16*Math.sin((18+i*72)*Math.PI/180)
+    );
+    ctx.lineTo(
+      starX + 6*Math.cos((54+i*72)*Math.PI/180),
+      starY + 6*Math.sin((54+i*72)*Math.PI/180)
+    );
+  }
+  ctx.closePath();
+  ctx.fill();
+}
+
+  function drawTreeSnow(){
+    const baseX = 0;
+    const baseY = canvas.height - treeCanvas.height;
+    for(let i=0;i<80;i++){
+      const sx = baseX + Math.random()*treeCanvas.width;
+      const sy = baseY + Math.random()*(treeCanvas.height*0.85);
+      ctx.beginPath();
+      ctx.fillStyle="white";
+      ctx.arc(sx,sy,Math.random()*2+1,0,Math.PI*2);
+      ctx.fill();
+    }
+  }
+
+  // --- LOGO ---
+  // --- LOGO (top-left) and top-center text ---
+function drawLogo() {
+    const logoX = 160;  // left margin for logo
+    const logoY = 100;
+    const rx = 100;
+    const ry = 50;
+
+    // Logo ellipse
+    ctx.save();
+    ctx.shadowColor = 'rgba(0,0,0,0.6)';
+    ctx.shadowBlur = 10;
+    ctx.shadowOffsetX = 3;
+    ctx.shadowOffsetY = 3;
+
+    const gradient = ctx.createLinearGradient(logoX - rx, logoY - ry, logoX + rx, logoY + ry);
+    gradient.addColorStop(0, '#FFD700');
+    gradient.addColorStop(0.5, '#FFA500');
+    gradient.addColorStop(1, '#FFD700');
+    ctx.fillStyle = gradient;
+    ctx.strokeStyle = 'white';
+    ctx.lineWidth = 2;
+
+    ctx.beginPath();
+    ctx.ellipse(logoX, logoY, rx, ry, 0, 0, 2 * Math.PI);
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.shadowColor = 'transparent';
+    ctx.fillStyle = 'white';
+    ctx.font = 'bold 20px Arial';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('School №33', logoX, logoY - 20);
+    ctx.fillText('10A', logoX, logoY);
+    ctx.fillText('1982', logoX, logoY + 20);
+    ctx.restore();
+
+    // Top-center text
+    const textX = canvas.width / 2;  // center
+    const textY = logoY + 5;         // same vertical as logo
+    ctx.save();
+    ctx.font = '36px Alex Brush';
+    ctx.textAlign = 'center';
+    ctx.fillStyle = 'white';
+    ctx.fillText('" Дурсамж-2026 "  Шинэ жилийн цэнгүүн', textX, textY);
+    ctx.restore();
+}
+
+
+  // --- DRAW LOOP ---
+  function draw() {
+    ctx.fillStyle = 'rgba(0,0,102,0.2)';
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+
+    // Snow
+    flakes.forEach(f=>{
+      ctx.beginPath();
+      ctx.arc(f.x,f.y,f.r,0,Math.PI*2);
+      ctx.fillStyle='white';
+      ctx.fill();
+      f.x += f.sx;
+      f.y += f.sy;
+      if(f.y>canvas.height) f.y=-f.r;
+      if(f.x>canvas.width) f.x=0;
+      if(f.x<0) f.x=canvas.width;
+    });
+
+    // Fireworks
+    particles = particles.filter(p => p.life>0);
+    particles.forEach(p=>{
+      p.x += p.vx;
+      p.y += p.vy;
+      p.vy += 0.02;
+      p.life--;
+      ctx.fillStyle = p.color;
+      ctx.fillRect(p.x,p.y,2,2);
+    });
+
+    drawTree();
+    drawTreeSnow();
+    drawFairyLights();
+    drawOrnaments();
+//    drawBlinkingLEDs();
+    drawGiftBoxes();
+    drawGlowingStar();
+    drawLogo();
+
+    requestAnimationFrame(draw);
+  }
+  draw();
+});
+</script>
+
+</body>
+</html>
